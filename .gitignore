@@ -4,3 +4,5 @@ Wan2.2/
 Wan2.2-I2V-A14B/
 nccl-tests/
 __pycache__/
+!logs/*.mp4
+*.tgz

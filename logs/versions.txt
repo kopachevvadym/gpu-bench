@@ -1,0 +1,7 @@
+diffusers==0.39.0
+flash_attn==2.8.3.post2
+nvidia-nccl-cu12==2.27.3
+torch==2.8.0+cu128
+torchaudio==2.8.0+cu128
+torchvision==0.23.0+cu128
+transformers==4.51.3

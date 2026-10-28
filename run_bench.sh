@@ -25,10 +25,19 @@ trap 'kill $SMI_PID 2>/dev/null || true' EXIT
 echo "== 2. nccl-tests: all_reduce між двома GPU"
 if [ ! -d nccl-tests ]; then git clone --depth 1 https://github.com/NVIDIA/nccl-tests; fi
 (cd nccl-tests && make -j > /dev/null)
-./nccl-tests/build/all_reduce_perf -b 8 -e 1G -f 2 -g 2 | tee logs/nccl_all_reduce_2gpu.log
+./nccl-tests/build/all_reduce_perf -b 8 -e 1G -f 2 -g 2 | tee logs/nccl_all_reduce_2gpu.log \
+  || echo "nccl-tests failed: системна NCCL з образу може не підтримувати Blackwell"
+echo "== 2b. all_reduce через NCCL з PyTorch (саме її використовує Wan)"
+torchrun --nproc_per_node=2 "$SCRIPT_DIR/ar.py" 2>&1 | grep "NCCL OK" | tee logs/torch_nccl_allreduce.log || true
 
 echo "== 3. Wan 2.2: код і ваги"
-if [ ! -d Wan2.2 ]; then git clone --depth 1 https://github.com/Wan-Video/Wan2.2; fi
+if [ ! -d Wan2.2 ]; then
+  git clone --depth 1 https://github.com/Wan-Video/Wan2.2
+  # speech2video і animate тягнуть decord, якого немає в requirements; для I2V вони не потрібні
+  (cd Wan2.2 && git apply "$SCRIPT_DIR/patches/wan_optional_imports.diff")
+fi
+pip install -q -U wheel ninja packaging
+pip install -q flash-attn --no-build-isolation   # без цього pip збирає flash-attn без torch і падає
 pip install -q -r Wan2.2/requirements.txt
 pip install -q "huggingface_hub[cli]"
 if [ ! -d Wan2.2-I2V-A14B ]; then
@@ -41,11 +50,11 @@ echo "Вхідне зображення: $IMAGE"
 run () { # $1 = мітка, далі команда
   local tag="$1"; shift
   local t0=$(date +%s)
-  echo "START $tag $(date -Is)" >> logs/marks.txt
-  "$@" 2>&1 | tee "logs/$tag.log"
+  echo "START $tag $(date -Is)" >> "$WORK"/logs/marks.txt
+  "$@" 2>&1 | tee "$WORK/logs/$tag.log"
   local t1=$(date +%s)
-  echo "END $tag $(date -Is)" >> logs/marks.txt
-  echo "$tag,$((t1 - t0))" >> logs/wall_seconds.csv
+  echo "END $tag $(date -Is)" >> "$WORK"/logs/marks.txt
+  echo "$tag,$((t1 - t0))" >> "$WORK"/logs/wall_seconds.csv
 }
 
 echo "== 4. Wan 2.2 I2V на 1 GPU"

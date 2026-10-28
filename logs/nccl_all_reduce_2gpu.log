@@ -1,0 +1,18 @@
+# nccl-tests version 2.21.1 (afd59ab) nccl-headers=22501 nccl-library=22501
+# Collective test starting: all_reduce_perf
+# nThread 1 nGpus 2 minBytes 8 maxBytes 1073741824 step: 2(factor) warmup iters: 1 iters: 20 agg iters: 1 validation: 1 graph: 0 unalign: 0
+#
+# Using devices
+#  Rank  0 Group  0 Pid   6924 on 427285cf72a0 device  0 [0000:81:00] NVIDIA RTX PRO 6000 Blackwell Server Edition
+#  Rank  1 Group  0 Pid   6924 on 427285cf72a0 device  1 [0000:a1:00] NVIDIA RTX PRO 6000 Blackwell Server Edition
+#
+#                                                              out-of-place                       in-place
+#       size         count      type   redop    root     time   algbw   busbw  #wrong     time   algbw   busbw  #wrong
+#        (B)    (elements)                               (us)  (GB/s)  (GB/s)             (us)  (GB/s)  (GB/s)        
+           8             2     float     sum      -1427285cf72a0: Test NCCL failure common.cu:645 'unhandled cuda error (run with NCCL_DEBUG=INFO for details) / '
+ .. 427285cf72a0 pid 6924: Test failure common.cu:729
+ .. 427285cf72a0 pid 6924: Test failure common.cu:958
+ .. 427285cf72a0 pid 6924: Test failure all_reduce.cu:574
+ .. 427285cf72a0 pid 6924: Test failure common.cu:991
+ .. 427285cf72a0 pid 6924: Test failure common.cu:1870
+ .. 427285cf72a0 pid 6924: Test failure common.cu:1545
